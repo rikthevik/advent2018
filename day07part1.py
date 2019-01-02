@@ -28,31 +28,26 @@ def main():
         reverse[post].add(pre)
 
     all_nodes = set(g.keys()) | set(reverse.keys())
+    queue = set()
+    visited = set()
     for n in all_nodes:
-        if not g.get(n):
-            start = n
+        if not reverse.get(n):
+            queue.add(n)
             break
 
-    path = []
-    queue = [ start ]
-    visited = set() 
-    while queue:
-        curr = queue.pop(0)
-        if curr in visited:
-            print("already visited %r", curr)
-            continue
-        else:
-            visited.add(curr)
-        path.append(curr)
-        print("PATH", path)
-        print("curr(%r)" % curr, "queue(%r)" % queue, "visited(%r)" % visited)
-        for n in sorted(reverse.get(curr, []), reverse=True):
-            if n not in visited:
-                print("adding", n)
-                queue.append(n)
-        print()
+    print("initial queue", queue)
 
-    print("result", "".join(reversed(path)))
+    while queue:
+        curr = sorted(queue)[0]
+        print("curr", curr, "queue", queue)
+        visited.add(curr)
+
+        queue.remove(curr)
+        for n in g.get(curr, []):
+            if n not in visited:
+                queue.add(n)
+
+        print()
 
 #     print("no_incoming", no_incoming)
 #     print("all_nodes", all_nodes)
