@@ -414,23 +414,23 @@ def main():
         velocities.append(vel)
     
     horiz_values = [ p[0] for p in positions ]
-    horiz_offset = min(horiz_values)
+    horiz_offset = 0
     total_width = max(horiz_values) - min(horiz_values)
-    horiz_scale = 800.0 / total_width * 0.5
+    horiz_scale = 800.0 / total_width
 
     vert_values = [ p[1] for p in positions ]
-    vert_offset = min(vert_values)
+    vert_offset = 0
     total_height = max(vert_values) - min(vert_values)
-    vert_scale = 800.0 / total_height * 0.5
+    vert_scale = 800.0 / total_height
 
-    for p in positions:
-        p[0] = (p[0] - horiz_offset) * horiz_scale
-        p[1] = (p[1] - vert_offset) * vert_scale
-
-    for p in velocities:
-        p[0] *= horiz_scale
-        p[1] *= vert_scale
-
+#    for p in positions:
+#        p[0] = (p[0] - horiz_offset) * horiz_scale
+#        p[1] = (p[1] - vert_offset) * vert_scale
+#
+#    for p in velocities:
+#        p[0] *= horiz_scale
+#        p[1] *= vert_scale
+#
     info = {}
 
     print("width", total_width, "height", total_height)
@@ -444,32 +444,34 @@ def main():
     <title>Canvas tutorial</title>
     <script type="text/javascript">
       var ctx;
+      var factor = 120;
       var positions = %s;
       var velocities = %s;
       var info = %s;
+      var framecount = 0;
       function draw() {
         var canvas = document.getElementById('tutorial');
         ctx = canvas.getContext('2d');
         alert('hello');
-        drawPositions();
         setInterval(loop, 100);
       }
       function loop() {
         console.log("looping");
         move();
-        drawPositions();
       }
       function move() {
-        for (var i=0; i < positions.length; ++i) {
-            positions[i][0] += velocities[i][0] * 120;
-            positions[i][1] += velocities[i][1] * 120;
-        }
-      }
-      function drawPositions() {
         ctx.clearRect(0, 0, 800, 800);
+        ctx.save();
+        ctx.scale(0.01, 0.01);
+        ctx.translate(50000, 50000);
+        framecount += 1;
         for (var i=0; i < positions.length; ++i) {
-          ctx.fillRect(positions[i][0], positions[i][1], 2, 2);
+          ctx.fillRect(
+            positions[i][0] + velocities[i][0] * factor * framecount,
+            positions[i][1] + velocities[i][1] * factor * framecount, 
+            50, 50);
         }
+        ctx.restore();
       }
     </script>
     <style type="text/css">
@@ -477,7 +479,7 @@ def main():
     </style>
   </head>
   <body onload="draw();">
-    <canvas id="tutorial" width="400" height="400"></canvas>
+    <canvas id="tutorial" width="800" height="800"></canvas>
   </body>
 </html>
 ''' % (json.dumps(positions), json.dumps(velocities), json.dumps(info)), file=f)
