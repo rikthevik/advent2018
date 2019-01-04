@@ -423,18 +423,9 @@ def main():
     total_height = max(vert_values) - min(vert_values)
     vert_scale = 800.0 / total_height
 
-#    for p in positions:
-#        p[0] = (p[0] - horiz_offset) * horiz_scale
-#        p[1] = (p[1] - vert_offset) * vert_scale
-#
-#    for p in velocities:
-#        p[0] *= horiz_scale
-#        p[1] *= vert_scale
-#
     info = {}
 
     print("width", total_width, "height", total_height)
-
 
     print('''
 <!DOCTYPE html>
@@ -444,7 +435,7 @@ def main():
     <title>Canvas tutorial</title>
     <script type="text/javascript">
       var ctx;
-      var factor = 120;
+      var factor = 100;
       var positions = %s;
       var velocities = %s;
       var info = %s;
@@ -452,24 +443,65 @@ def main():
       function draw() {
         var canvas = document.getElementById('tutorial');
         ctx = canvas.getContext('2d');
-        alert('hello');
-        setInterval(loop, 100);
+        document.getElementById('go').addEventListener('click', function () {
+            move(
+                parseFloat(document.getElementById('framecount').value),
+                parseFloat(document.getElementById('scalex').value),
+                parseFloat(document.getElementById('scaley').value),
+                parseFloat(document.getElementById('transx').value),
+                parseFloat(document.getElementById('transy').value),
+                parseFloat(document.getElementById('rectsize').value)
+            );
+        });
+        document.getElementById('add').addEventListener('click', function () {
+            document.getElementById('framecount').value = 
+                parseFloat(document.getElementById('framecount').value) +
+                parseFloat(document.getElementById('toadd').value);
+            move(parseFloat(document.getElementById('framecount').value));
+        });
+        document.getElementById('sub').addEventListener('click', function () {
+            document.getElementById('framecount').value = 
+                parseFloat(document.getElementById('framecount').value) -
+                parseFloat(document.getElementById('toadd').value);
+            move(parseFloat(document.getElementById('framecount').value));
+        });
+
       }
       function loop() {
         console.log("looping");
-        move();
+        framecount += 1;
+        move(framecount);
       }
-      function move() {
+      function move(fc, scalex, scaley, transx, transy, rectsize) {
+        var min_horiz = 1e11;
+        var max_horiz = -1e11;
+        var min_vert = 1e11;
+        var max_vert = -1e11;
+        for (var i=0; i < positions.length; ++i) {
+            var horiz = positions[i][0] + velocities[i][0] * factor * fc;
+            min_horiz = Math.min(min_horiz, horiz);
+            max_horiz = Math.max(max_horiz, horiz);
+            var vert = positions[i][1] + velocities[i][1] * factor * fc;
+            min_vert = Math.min(min_vert, vert);
+            max_vert = Math.max(max_vert, vert);
+        }
+        var totalWidth = max_horiz - min_horiz + 10;
+        var totalHeight = max_vert - min_vert + 10;
+
         ctx.clearRect(0, 0, 800, 800);
         ctx.save();
-        ctx.scale(0.01, 0.01);
-        ctx.translate(50000, 50000);
-        framecount += 1;
+//        var scalex = 800 / totalWidth * 0.25;
+ //       var scaley = 800 / totalHeight * 0.25;
+        ctx.scale(scalex, scaley);
+
+        console.log(totalWidth / 2, totalHeight / 2);
+        ctx.translate(transx, transy);
+
         for (var i=0; i < positions.length; ++i) {
           ctx.fillRect(
-            positions[i][0] + velocities[i][0] * factor * framecount,
-            positions[i][1] + velocities[i][1] * factor * framecount, 
-            50, 50);
+            positions[i][0] + velocities[i][0] * factor * fc,
+            positions[i][1] + velocities[i][1] * factor * fc, 
+            rectsize || 10, rectsize || 10);
         }
         ctx.restore();
       }
@@ -479,11 +511,20 @@ def main():
     </style>
   </head>
   <body onload="draw();">
+    <br>
+    <input id="toadd" value="0.1"><button id="add">Add</button><button id="sub">Sub</button>
+    <br>
+    Frame <input id="framecount" value="102"><br>
+    Scale <input id="scalex" value="2"><input id="scaley" value="2"><br>
+    Translate <input id="transx" value="250"><input id="transy" value="250"><br>
+    RectSize <input id="rectsize" value="1"><br>
+    <button id="go">Go</button>
+    <br>
     <canvas id="tutorial" width="800" height="800"></canvas>
   </body>
 </html>
 ''' % (json.dumps(positions), json.dumps(velocities), json.dumps(info)), file=f)
-    os.system("open part10.html")
+    # os.system("open part10.html")
 
 
 
