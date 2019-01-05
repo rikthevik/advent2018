@@ -69,38 +69,34 @@ regex = re.compile('^(\d+) players; last marble is worth (\d+) points')
 def display_state(r, state):
     print("%02d: " % r, end='')
     for i in range(-40, 140):
-        print(state.get(i, "-"), end='')
+        print('#' if i in state else '.', end='')
     print()
 
 def main():
     lines = inputstr.strip().splitlines()
     initial_state = lines[0][15:]
     rules = [ s.split(" => ") for s in lines[2:] ]
+    rules = [ (m, r) for m, r in rules if r == '#' ]
 
     print("INITIAL", initial_state)
-    state = dict(enumerate(initial_state)) 
+
+    # Let's try a set of all of the potted indexes.
+    state = set( i for i, c in enumerate(initial_state) if c == '#' )
     display_state(0, state)
 
-
     for r in range(1, 21):
-        newstate = {}
+        newstate = set()
         # print("!!", min(state.keys()), max(state.keys()))
-        for i in range(min(state.keys())-4, max(state.keys())+4):
-            s = "".join(state.get(i+j, '.') for j in range(-2, 3))
-            # print("s=", s)
-            found = None
+        for i in range(min(state)-4, max(state)+4):
+            s = "".join('#' if i+j in state else '.' for j in range(-2, 3))
             for match, result in rules:
-                # print("match=", match, "s=", s)
                 if match == s:
-                    assert not found
-                    found = result
-                    # print("MATCH AT ", i)
+                    newstate.add(i)
                     break
-            newstate[i] = found or '.'
         state = newstate
         display_state(r, state)
         
-    print(sum( k for k, v in state.items() if v == '#' ))
+    print(sum(state)) 
 
 
 
