@@ -67,8 +67,8 @@ regex = re.compile('^(\d+) players; last marble is worth (\d+) points')
     
     
 def display_state(r, state):
-    print("%02d: " % r, end='')
-    for i in range(-40, 140):
+    print("%02d: (%04d)" % (r, sum(state)), end='')
+    for i in range(-40, 100):
         print('#' if i in state else '.', end='')
     print()
 
@@ -84,9 +84,19 @@ def main():
     state = set( i for i, c in enumerate(initial_state) if c == '#' )
     display_state(0, state)
 
-    for r in range(1, 21):
+    last = 0
+    for r in range(1, 500000):
         newstate = set()
         # print("!!", min(state.keys()), max(state.keys()))
+        print("now=", sum(state), "last=", last, "diff=", (sum(state)-last))
+        
+        if r > 200:
+            predicted = 23 * r + 434
+            assert predicted == sum(state)
+
+        last = sum(state)
+
+
         for i in range(min(state)-4, max(state)+4):
             s = "".join('#' if i+j in state else '.' for j in range(-2, 3))
             for match, result in rules:
